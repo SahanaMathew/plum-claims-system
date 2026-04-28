@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plum Claims Processing System</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="big-spinner"></div>
+  <div class="loading-text" id="loadingText">Processing...</div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="navbar-brand" href="#">
+    <div class="logo">P</div>
+    Plum Claims
+  </a>
+  <div class="navbar-tabs">
+    <button class="nav-tab active" data-tab="tabSubmit">Submit Claim</button>
+    <button class="nav-tab" data-tab="tabHistory">Claims History</button>
+    <button class="nav-tab" data-tab="tabTests">Run Test Cases</button>
+  </div>
+  <div class="navbar-status">
+    <div class="status-dot"></div>
+    API Connected
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main">
+
+  <!-- ======================== TAB: SUBMIT CLAIM ======================== -->
+  <div class="tab-content active" id="tabSubmit">
+    <div class="two-col">
+
+      <!-- Left: Form -->
+      <div>
+        <div class="section-title">Submit New Claim</div>
+        <div class="section-subtitle">Fill in claim details or load a test case to demo the system.</div>
+
+        <!-- Test Case Loader -->
+        <div class="card">
+          <div class="card-header">
+            🧪 Load Test Case
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <select id="testCaseSelect" style="flex:1;">
+              <option value="">-- Select a test case to pre-fill the form --</option>
+            </select>
+            <button class="btn btn-secondary" onclick="loadTestCase()">Load</button>
+          </div>
+        </div>
+
+        <!-- Claim Details -->
+        <div class="card">
+          <div class="card-header">📋 Claim Details</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Member ID *</label>
+              <select id="memberId">
+                <option value="">-- Select Member --</option>
+                <option>EMP001</option>
+                <option>EMP002</option>
+                <option>EMP003</option>
+                <option>EMP004</option>
+                <option>EMP005</option>
+                <option>EMP006</option>
+                <option>EMP007</option>
+                <option>EMP008</option>
+                <option>EMP009</option>
+                <option>EMP010</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Policy ID *</label>
+              <input type="text" id="policyId" value="PLUM_GHI_2024">
+            </div>
+            <div class="form-group">
+              <label>Claim Category *</label>
+              <select id="claimCategory">
+                <option value="">-- Select Category --</option>
+                <option value="CONSULTATION">CONSULTATION</option>
+                <option value="DIAGNOSTIC">DIAGNOSTIC</option>
+                <option value="PHARMACY">PHARMACY</option>
+                <option value="DENTAL">DENTAL</option>
+                <option value="VISION">VISION</option>
+                <option value="ALTERNATIVE_MEDICINE">ALTERNATIVE MEDICINE</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Treatment Date *</label>
+              <input type="date" id="treatmentDate">
+            </div>
+            <div class="form-group">
+              <label>Claimed Amount (₹) *</label>
+              <input type="number" id="claimedAmount" placeholder="e.g. 1500" min="0">
+            </div>
+            <div class="form-group">
+              <label>Hospital Name</label>
+              <input type="text" id="hospitalName" placeholder="e.g. Apollo Hospitals">
+            </div>
+            <div class="form-group">
+              <label>YTD Claims Amount (₹)</label>
+              <input type="number" id="ytdAmount" value="0" min="0">
+            </div>
+            <div class="form-group">
+              <label>Simulate Component Failure</label>
+              <div style="display:flex;align-items:center;gap:8px;padding:9px 0;">
+                <input type="checkbox" id="simulateFailure" style="width:auto;margin:0;">
+                <span style="font-size:13px;color:var(--text-secondary);">Enable for TC011 degraded pipeline test</span>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>Claims History JSON (optional)</label>
+              <textarea id="claimsHistory" placeholder='[{"claim_id":"CLM001","date":"2024-10-30","amount":1200}]'></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card">
+          <div class="card-header">
+            📄 Documents
+            <button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="addDocument()">+ Add Document</button>
+          </div>
+          <div id="documentsContainer"></div>
+          <div id="noDocsMsg" style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px;">
+            No documents added. Click "Add Document" or load a test case.
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="submitClaim()" style="flex:1;">
+            ⚡ Process Claim
+          </button>
+          <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+        </div>
+      </div>
+
+      <!-- Right: Decision Panel -->
+      <div>
+        <div class="section-title">Decision</div>
+        <div class="section-subtitle">The AI pipeline result will appear here after submission.</div>
+
+        <div id="decisionPanel" class="decision-panel">
+          <!-- Rendered by JS -->
+        </div>
+
+        <div id="noDecisionState" class="card" style="text-align:center;padding:48px 24px;">
+          <div style="font-size:36px;margin-bottom:12px;">⚕️</div>
+          <div style="color:var(--text-muted);font-size:14px;">
+            Submit a claim to see the AI pipeline decision, agent trace, and itemized breakdown.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================== TAB: CLAIMS HISTORY ======================== -->
+  <div class="tab-content" id="tabHistory">
+    <div class="section-title">Claims History</div>
+    <div class="section-subtitle">All claims processed in this session.</div>
+
+    <div class="card" style="padding:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);">
+        <span style="font-weight:600;">Processed Claims</span>
+        <button class="btn btn-secondary btn-sm" onclick="refreshHistory()">Refresh</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="claims-table">
+          <thead>
+            <tr>
+              <th>Claim ID</th>
+              <th>Member</th>
+              <th>Claimed</th>
+              <th>Approved</th>
+              <th>Decision</th>
+              <th>Pipeline</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr><td colspan="7">
+              <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <p>No claims yet.</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== TAB: TEST CASES ======================== -->
+  <div class="tab-content" id="tabTests">
+    <div class="section-title">Test Cases</div>
+    <div class="section-subtitle">Run all 12 test scenarios from the assignment specification and verify the pipeline output.</div>
+
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+      <button class="btn btn-primary" id="runTestsBtn" onclick="runAllTestCases()">
+        ▶ Run All Test Cases
+      </button>
+      <div id="testSummary" style="font-size:14px;color:var(--text-secondary);"></div>
+    </div>
+
+    <div id="testCaseCards" class="test-grid">
+      <div class="empty-state">
+        <p>Loading test cases...</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="/static/app.js"></script>
+<script>
+  // Extra helpers that need DOM references
+
+  function clearForm() {
+    ['memberId','policyId','claimCategory','treatmentDate','claimedAmount',
+     'hospitalName','ytdAmount','claimsHistory'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('policyId').value = 'PLUM_GHI_2024';
+    document.getElementById('ytdAmount').value = '0';
+    document.getElementById('simulateFailure').checked = false;
+    document.getElementById('testCaseSelect').value = '';
+    clearDocuments();
+    document.getElementById('decisionPanel').classList.remove('visible');
+    document.getElementById('noDecisionState').style.display = '';
+  }
+
+  // Hide/show the "no docs" message dynamically
+  const docObserver = new MutationObserver(() => {
+    const container = document.getElementById('documentsContainer');
+    const msg = document.getElementById('noDocsMsg');
+    if (msg) msg.style.display = container.children.length ? 'none' : 'block';
+  });
+  const dc = document.getElementById('documentsContainer');
+  if (dc) docObserver.observe(dc, { childList: true });
+
+  // Show decision panel and hide placeholder
+  const origRenderDecision = renderDecision;
+  renderDecision = function(result) {
+    origRenderDecision(result);
+    const noState = document.getElementById('noDecisionState');
+    if (noState) noState.style.display = 'none';
+  };
+</script>
+</body>
+</html>
