@@ -1,0 +1,1316 @@
+{
+  "summary": {
+    "passed": 12,
+    "failed": 0,
+    "total": 12
+  },
+  "cases": [
+    {
+      "case_id": "TC001",
+      "case_name": "Wrong Document Uploaded",
+      "description": "Member submits two prescriptions for a consultation claim that requires a prescription and a hospital bill.",
+      "expected": {
+        "decision": null,
+        "system_must": [
+          "Stop before making any claim decision",
+          "Tell the member specifically what document type was uploaded and what is needed instead",
+          "Not return a generic error — the message must name the uploaded document type and the required document type"
+        ]
+      },
+      "actual": {
+        "decision": null,
+        "pipeline_status": "EARLY_EXIT",
+        "approved_amount": null,
+        "claimed_amount": 1500.0,
+        "confidence_score": null,
+        "rejection_reasons": [],
+        "partial_items": [],
+        "message": "Missing required documents for CONSULTATION claim: HOSPITAL_BILL not found in your submission. Please upload the required document(s) to proceed.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "EARLY_EXIT",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'PRESCRIPTION'], Required: ['PRESCRIPTION', 'HOSPITAL_BILL']",
+            "output_summary": "Missing required documents for CONSULTATION claim: HOSPITAL_BILL not found in your submission. Please upload the required document(s) to proceed.",
+            "checks": [
+              {
+                "check": "document_types",
+                "status": "FAILED",
+                "detail": "Missing required documents for CONSULTATION claim: HOSPITAL_BILL not found in your submission. Please upload the required document(s) to proceed."
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.628872"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "Early exit triggered correctly"
+    },
+    {
+      "case_id": "TC002",
+      "case_name": "Unreadable Document",
+      "description": "Member uploads a valid prescription but a blurry, unreadable photo of their pharmacy bill.",
+      "expected": {
+        "decision": null,
+        "system_must": [
+          "Identify that the pharmacy bill cannot be read",
+          "Ask the member to re-upload that specific document",
+          "Not reject the claim outright"
+        ]
+      },
+      "actual": {
+        "decision": null,
+        "pipeline_status": "EARLY_EXIT",
+        "approved_amount": null,
+        "claimed_amount": 800.0,
+        "confidence_score": null,
+        "rejection_reasons": [],
+        "partial_items": [],
+        "message": "The document 'blurry_bill.jpg' (type: PHARMACY_BILL) could not be read — the image is too blurry or unclear. Please re-upload a clear photo or scan of this document to proceed.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "EARLY_EXIT",
+            "input_summary": "Checked 2 documents",
+            "output_summary": "The document 'blurry_bill.jpg' (type: PHARMACY_BILL) could not be read — the image is too blurry or unclear. Please re-upload a clear photo or scan of this document to proceed.",
+            "checks": [
+              {
+                "check": "readability",
+                "status": "FAILED",
+                "detail": "The document 'blurry_bill.jpg' (type: PHARMACY_BILL) could not be read — the image is too blurry or unclear. Please re-upload a clear photo or scan of this document to proceed.",
+                "file_id": "F004"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.628872"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "Early exit triggered correctly"
+    },
+    {
+      "case_id": "TC003",
+      "case_name": "Documents Belong to Different Patients",
+      "description": "The prescription is for Rajesh Kumar but the hospital bill is for a different patient, Arjun Mehta.",
+      "expected": {
+        "decision": null,
+        "system_must": [
+          "Detect that the documents belong to different people",
+          "Surface this to the member with the specific names found on each document",
+          "Not proceed to a claim decision"
+        ]
+      },
+      "actual": {
+        "decision": null,
+        "pipeline_status": "EARLY_EXIT",
+        "approved_amount": null,
+        "claimed_amount": 1500.0,
+        "confidence_score": null,
+        "rejection_reasons": [],
+        "partial_items": [],
+        "message": "Patient name mismatch across documents: prescription_rajesh.jpg: Rajesh Kumar; bill_arjun.jpg: Arjun Mehta. All documents in a single claim must belong to the same patient. Please ensure all uploaded documents are for the same person.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "EARLY_EXIT",
+            "input_summary": "Patient names found: ['Rajesh Kumar', 'Arjun Mehta']",
+            "output_summary": "Patient name mismatch across documents: prescription_rajesh.jpg: Rajesh Kumar; bill_arjun.jpg: Arjun Mehta. All documents in a single claim must belong to the same patient. Please ensure all uploaded documents are for the same person.",
+            "checks": [
+              {
+                "check": "cross_patient",
+                "status": "FAILED",
+                "detail": "Patient name mismatch across documents: prescription_rajesh.jpg: Rajesh Kumar; bill_arjun.jpg: Arjun Mehta. All documents in a single claim must belong to the same patient. Please ensure all uploaded documents are for the same person."
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.628872"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "Early exit triggered correctly"
+    },
+    {
+      "case_id": "TC004",
+      "case_name": "Clean Consultation — Full Approval",
+      "description": "Complete, valid consultation claim with correct documents, valid member, covered treatment, within all limits.",
+      "expected": {
+        "decision": "APPROVED",
+        "approved_amount": 1350,
+        "notes": "10% co-pay applied on consultation category (₹150 deducted)",
+        "confidence_score": "above 0.85"
+      },
+      "actual": {
+        "decision": "APPROVED",
+        "pipeline_status": "COMPLETE",
+        "approved_amount": 1350.0,
+        "claimed_amount": 1500.0,
+        "confidence_score": 1.0,
+        "rejection_reasons": [],
+        "partial_items": [],
+        "message": "Claim approved for Rs 1,350.00. Co-pay 10% deducted: Rs 150.00.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'HOSPITAL_BILL'], Required: ['PRESCRIPTION', 'HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for CONSULTATION claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.628872"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 2 documents",
+            "output_summary": "Extracted data from 2 docs. Diagnoses: ['Viral Fever']. Line items: 3",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.628872"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "SUCCESS",
+            "input_summary": "Member: EMP001, Category: CONSULTATION, Amount: ₹1500.0",
+            "output_summary": "Rejection reasons: None. Approved: ₹1350.0",
+            "checks": [
+              {
+                "check": "member_validation",
+                "status": "PASSED",
+                "detail": "Member Rajesh Kumar found, joined 2024-04-01"
+              },
+              {
+                "check": "exclusions",
+                "status": "PASSED",
+                "detail": "No exclusions found"
+              },
+              {
+                "check": "waiting_period",
+                "status": "PASSED",
+                "detail": "No waiting period violations"
+              },
+              {
+                "check": "pre_authorization",
+                "status": "PASSED",
+                "detail": "Pre-authorization not required or already obtained"
+              },
+              {
+                "check": "per_claim_limit",
+                "status": "PASSED",
+                "detail": "Claimed ₹1,500 is within per-claim limit of ₹5,000"
+              },
+              {
+                "check": "copay",
+                "status": "APPLIED",
+                "detail": "Co-pay 10% deducted: ₹150.00. Final approved: ₹1,350.00"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "CLEAR",
+            "input_summary": "Checking 0 historical claims, amount ₹1500.0",
+            "output_summary": "Fraud score: 0.00. Signals: None",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "PASSED",
+                "detail": "0 same-day claim(s) found (limit: 2)"
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹1,500 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: [], Fraud score: 0.0",
+            "output_summary": "Decision: APPROVED, Amount: Rs 1350.0, Confidence: 1.0",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "APPROVED",
+                "amount": 1350.0
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    },
+    {
+      "case_id": "TC005",
+      "case_name": "Waiting Period — Diabetes",
+      "description": "Member joined 2024-09-01. Claims for diabetes treatment on 2024-10-15, which is within the 90-day waiting period for diabetes.",
+      "expected": {
+        "decision": "REJECTED",
+        "rejection_reasons": [
+          "WAITING_PERIOD"
+        ],
+        "system_must": [
+          "State the date from which the member will be eligible for diabetes-related claims"
+        ]
+      },
+      "actual": {
+        "decision": "REJECTED",
+        "pipeline_status": "COMPLETE",
+        "approved_amount": 0.0,
+        "claimed_amount": 3000.0,
+        "confidence_score": 1.0,
+        "rejection_reasons": [
+          "WAITING_PERIOD"
+        ],
+        "partial_items": [],
+        "message": "Claim rejected. Treatment for diabetes is within the 90-day waiting period (joined 2024-09-01). Eligible from 2024-11-30.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'HOSPITAL_BILL'], Required: ['PRESCRIPTION', 'HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for CONSULTATION claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 2 documents",
+            "output_summary": "Extracted data from 2 docs. Diagnoses: ['Type 2 Diabetes Mellitus']. Line items: 0",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "COMPLETED_WITH_ISSUES",
+            "input_summary": "Member: EMP005, Category: CONSULTATION, Amount: ₹3000.0",
+            "output_summary": "Rejection reasons: ['WAITING_PERIOD']. Approved: ₹3000.0",
+            "checks": [
+              {
+                "check": "member_validation",
+                "status": "PASSED",
+                "detail": "Member Vikram Joshi found, joined 2024-09-01"
+              },
+              {
+                "check": "exclusions",
+                "status": "PASSED",
+                "detail": "No exclusions found"
+              },
+              {
+                "check": "waiting_period",
+                "status": "FAILED",
+                "detail": "Treatment for diabetes is within the 90-day waiting period (joined 2024-09-01). Eligible from 2024-11-30."
+              },
+              {
+                "check": "pre_authorization",
+                "status": "PASSED",
+                "detail": "Pre-authorization not required or already obtained"
+              },
+              {
+                "check": "per_claim_limit",
+                "status": "PASSED",
+                "detail": "Claimed ₹3,000 is within per-claim limit of ₹5,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "CLEAR",
+            "input_summary": "Checking 0 historical claims, amount ₹3000.0",
+            "output_summary": "Fraud score: 0.00. Signals: None",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "PASSED",
+                "detail": "0 same-day claim(s) found (limit: 2)"
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹3,000 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: ['WAITING_PERIOD'], Fraud score: 0.0",
+            "output_summary": "Decision: REJECTED, Amount: Rs 0, Confidence: 1.0",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "REJECTED",
+                "reasons": [
+                  "WAITING_PERIOD"
+                ]
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    },
+    {
+      "case_id": "TC006",
+      "case_name": "Dental Partial Approval — Cosmetic Exclusion",
+      "description": "Bill includes root canal treatment (covered) and teeth whitening (cosmetic, excluded). System must approve only the covered procedure.",
+      "expected": {
+        "decision": "PARTIAL",
+        "approved_amount": 8000,
+        "system_must": [
+          "Itemize which line items were approved and which were rejected",
+          "State the reason for each rejection at the line-item level"
+        ]
+      },
+      "actual": {
+        "decision": "PARTIAL",
+        "pipeline_status": "COMPLETE",
+        "approved_amount": 8000.0,
+        "claimed_amount": 12000.0,
+        "confidence_score": 1.0,
+        "rejection_reasons": [],
+        "partial_items": [
+          {
+            "description": "Teeth Whitening",
+            "amount": 4000,
+            "exclusion_matched": "cosmetic or aesthetic procedures",
+            "status": "EXCLUDED",
+            "reason": "Policy exclusion: cosmetic or aesthetic procedures"
+          },
+          {
+            "description": "Root Canal Treatment",
+            "amount": 8000,
+            "status": "APPROVED"
+          }
+        ],
+        "message": "Partial approval: Rs 8,000 approved out of Rs 12,000 claimed.\n  APPROVED: Root Canal Treatment — Rs 8,000\n  EXCLUDED: Teeth Whitening — Rs 4,000 (Policy exclusion: cosmetic or aesthetic procedures)",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['HOSPITAL_BILL'], Required: ['HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for DENTAL claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 1 documents",
+            "output_summary": "Extracted data from 1 docs. Diagnoses: []. Line items: 2",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "COMPLETED_WITH_ISSUES",
+            "input_summary": "Member: EMP002, Category: DENTAL, Amount: ₹12000.0",
+            "output_summary": "Rejection reasons: ['PARTIAL_EXCLUSION']. Approved: ₹8000",
+            "checks": [
+              {
+                "check": "member_validation",
+                "status": "PASSED",
+                "detail": "Member Priya Singh found, joined 2024-04-01"
+              },
+              {
+                "check": "exclusions",
+                "status": "PARTIAL",
+                "detail": "Excluded items: ['Teeth Whitening']",
+                "excluded_amount": 4000
+              },
+              {
+                "check": "waiting_period",
+                "status": "PASSED",
+                "detail": "No waiting period violations"
+              },
+              {
+                "check": "pre_authorization",
+                "status": "PASSED",
+                "detail": "Pre-authorization not required or already obtained"
+              },
+              {
+                "check": "per_claim_limit",
+                "status": "PASSED",
+                "detail": "Claimed ₹12,000 is within per-claim limit of ₹10,000"
+              },
+              {
+                "check": "copay",
+                "status": "NOT_APPLICABLE",
+                "detail": "No co-pay for this category"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "CLEAR",
+            "input_summary": "Checking 0 historical claims, amount ₹12000.0",
+            "output_summary": "Fraud score: 0.00. Signals: None",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "PASSED",
+                "detail": "0 same-day claim(s) found (limit: 2)"
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹12,000 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: ['PARTIAL_EXCLUSION'], Fraud score: 0.0",
+            "output_summary": "Decision: PARTIAL, Amount: Rs 8000, Confidence: 1.0",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "PARTIAL",
+                "approved_items": 1,
+                "excluded_items": 1
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    },
+    {
+      "case_id": "TC007",
+      "case_name": "MRI Without Pre-Authorization",
+      "description": "MRI scan costing ₹15,000 submitted without pre-authorization. Policy requires pre-auth for MRI above ₹10,000.",
+      "expected": {
+        "decision": "REJECTED",
+        "rejection_reasons": [
+          "PRE_AUTH_MISSING"
+        ],
+        "system_must": [
+          "Explain that pre-authorization was required and not obtained",
+          "Tell the member what they should do to resubmit with pre-auth"
+        ]
+      },
+      "actual": {
+        "decision": "REJECTED",
+        "pipeline_status": "COMPLETE",
+        "approved_amount": 0.0,
+        "claimed_amount": 15000.0,
+        "confidence_score": 1.0,
+        "rejection_reasons": [
+          "WAITING_PERIOD",
+          "PRE_AUTH_MISSING",
+          "PER_CLAIM_EXCEEDED"
+        ],
+        "partial_items": [],
+        "message": "Claim rejected. Treatment for hernia is within the 365-day waiting period (joined 2024-04-01). Eligible from 2025-04-01. | Pre-authorization is required for MRI Lumbar Spine when the claimed amount exceeds ₹10,000. The claimed amount of ₹15,000 requires prior approval. To resubmit: obtain pre-authorization from your insurer before the procedure, then resubmit the claim with the pre-auth reference number. | Claimed amount ₹15,000 exceeds per-claim limit of ₹10,000",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'LAB_REPORT', 'HOSPITAL_BILL'], Required: ['PRESCRIPTION', 'LAB_REPORT', 'HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for DIAGNOSTIC claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 3 documents",
+            "output_summary": "Extracted data from 3 docs. Diagnoses: ['Suspected Lumbar Disc Herniation']. Line items: 1",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.630876"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "COMPLETED_WITH_ISSUES",
+            "input_summary": "Member: EMP007, Category: DIAGNOSTIC, Amount: ₹15000.0",
+            "output_summary": "Rejection reasons: ['WAITING_PERIOD', 'PRE_AUTH_MISSING', 'PER_CLAIM_EXCEEDED']. Approved: ₹15000.0",
+            "checks": [
+              {
+                "check": "member_validation",
+                "status": "PASSED",
+                "detail": "Member Suresh Patil found, joined 2024-04-01"
+              },
+              {
+                "check": "exclusions",
+                "status": "PASSED",
+                "detail": "No exclusions found"
+              },
+              {
+                "check": "waiting_period",
+                "status": "FAILED",
+                "detail": "Treatment for hernia is within the 365-day waiting period (joined 2024-04-01). Eligible from 2025-04-01."
+              },
+              {
+                "check": "pre_authorization",
+                "status": "FAILED",
+                "detail": "Pre-authorization is required for MRI Lumbar Spine when the claimed amount exceeds ₹10,000. The claimed amount of ₹15,000 requires prior approval. To resubmit: obtain pre-authorization from your insurer before the procedure, then resubmit the claim with the pre-auth reference number."
+              },
+              {
+                "check": "per_claim_limit",
+                "status": "FAILED",
+                "detail": "Claimed amount ₹15,000 exceeds per-claim limit of ₹10,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "CLEAR",
+            "input_summary": "Checking 0 historical claims, amount ₹15000.0",
+            "output_summary": "Fraud score: 0.00. Signals: None",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "PASSED",
+                "detail": "0 same-day claim(s) found (limit: 2)"
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹15,000 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: ['WAITING_PERIOD', 'PRE_AUTH_MISSING', 'PER_CLAIM_EXCEEDED'], Fraud score: 0.0",
+            "output_summary": "Decision: REJECTED, Amount: Rs 0, Confidence: 1.0",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "REJECTED",
+                "reasons": [
+                  "WAITING_PERIOD",
+                  "PRE_AUTH_MISSING",
+                  "PER_CLAIM_EXCEEDED"
+                ]
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    },
+    {
+      "case_id": "TC008",
+      "case_name": "Per-Claim Limit Exceeded",
+      "description": "Claimed amount of ₹7,500 exceeds the per-claim limit of ₹5,000.",
+      "expected": {
+        "decision": "REJECTED",
+        "rejection_reasons": [
+          "PER_CLAIM_EXCEEDED"
+        ],
+        "system_must": [
+          "State the per-claim limit and the claimed amount clearly in the rejection message"
+        ]
+      },
+      "actual": {
+        "decision": "REJECTED",
+        "pipeline_status": "COMPLETE",
+        "approved_amount": 0.0,
+        "claimed_amount": 7500.0,
+        "confidence_score": 1.0,
+        "rejection_reasons": [
+          "PER_CLAIM_EXCEEDED"
+        ],
+        "partial_items": [],
+        "message": "Claim rejected. Claimed amount ₹7,500 exceeds per-claim limit of ₹5,000",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'HOSPITAL_BILL'], Required: ['PRESCRIPTION', 'HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for CONSULTATION claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 2 documents",
+            "output_summary": "Extracted data from 2 docs. Diagnoses: ['Gastroenteritis']. Line items: 2",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "COMPLETED_WITH_ISSUES",
+            "input_summary": "Member: EMP003, Category: CONSULTATION, Amount: ₹7500.0",
+            "output_summary": "Rejection reasons: ['PER_CLAIM_EXCEEDED']. Approved: ₹7500.0",
+            "checks": [
+              {
+                "check": "member_validation",
+                "status": "PASSED",
+                "detail": "Member Amit Verma found, joined 2024-04-01"
+              },
+              {
+                "check": "exclusions",
+                "status": "PASSED",
+                "detail": "No exclusions found"
+              },
+              {
+                "check": "waiting_period",
+                "status": "PASSED",
+                "detail": "No waiting period violations"
+              },
+              {
+                "check": "pre_authorization",
+                "status": "PASSED",
+                "detail": "Pre-authorization not required or already obtained"
+              },
+              {
+                "check": "per_claim_limit",
+                "status": "FAILED",
+                "detail": "Claimed amount ₹7,500 exceeds per-claim limit of ₹5,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "CLEAR",
+            "input_summary": "Checking 0 historical claims, amount ₹7500.0",
+            "output_summary": "Fraud score: 0.00. Signals: None",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "PASSED",
+                "detail": "0 same-day claim(s) found (limit: 2)"
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹7,500 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: ['PER_CLAIM_EXCEEDED'], Fraud score: 0.0",
+            "output_summary": "Decision: REJECTED, Amount: Rs 0, Confidence: 1.0",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "REJECTED",
+                "reasons": [
+                  "PER_CLAIM_EXCEEDED"
+                ]
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    },
+    {
+      "case_id": "TC009",
+      "case_name": "Fraud Signal — Multiple Same-Day Claims",
+      "description": "Member EMP008 has already submitted 3 claims today before this one arrives. This is the 4th claim from the same member on the same day.",
+      "expected": {
+        "decision": "MANUAL_REVIEW",
+        "system_must": [
+          "Flag the unusual same-day claim pattern",
+          "Route to manual review rather than auto-rejecting",
+          "Include the specific signals that triggered the flag in the output"
+        ]
+      },
+      "actual": {
+        "decision": "MANUAL_REVIEW",
+        "pipeline_status": "COMPLETE",
+        "approved_amount": null,
+        "claimed_amount": 4800.0,
+        "confidence_score": 1.0,
+        "rejection_reasons": [],
+        "partial_items": [],
+        "message": "This claim has been flagged for manual review due to unusual patterns: Member has 3 existing claims on 2024-10-30 (limit: 2). This is claim #4 on the same day.. A claims officer will review within 2-3 business days.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'HOSPITAL_BILL'], Required: ['PRESCRIPTION', 'HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for CONSULTATION claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 2 documents",
+            "output_summary": "Extracted data from 2 docs. Diagnoses: ['Migraine']. Line items: 0",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "SUCCESS",
+            "input_summary": "Member: EMP008, Category: CONSULTATION, Amount: ₹4800.0",
+            "output_summary": "Rejection reasons: None. Approved: ₹4320.0",
+            "checks": [
+              {
+                "check": "member_validation",
+                "status": "PASSED",
+                "detail": "Member Ravi Menon found, joined 2024-04-01"
+              },
+              {
+                "check": "exclusions",
+                "status": "PASSED",
+                "detail": "No exclusions found"
+              },
+              {
+                "check": "waiting_period",
+                "status": "PASSED",
+                "detail": "No waiting period violations"
+              },
+              {
+                "check": "pre_authorization",
+                "status": "PASSED",
+                "detail": "Pre-authorization not required or already obtained"
+              },
+              {
+                "check": "per_claim_limit",
+                "status": "PASSED",
+                "detail": "Claimed ₹4,800 is within per-claim limit of ₹5,000"
+              },
+              {
+                "check": "copay",
+                "status": "APPLIED",
+                "detail": "Co-pay 10% deducted: ₹480.00. Final approved: ₹4,320.00"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "FLAGGED",
+            "input_summary": "Checking 3 historical claims, amount ₹4800.0",
+            "output_summary": "Fraud score: 0.85. Signals: ['EXCESSIVE_SAME_DAY_CLAIMS']",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "FLAGGED",
+                "detail": "Member has 3 existing claims on 2024-10-30 (limit: 2). This is claim #4 on the same day.",
+                "count": 3
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹4,800 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: [], Fraud score: 0.85",
+            "output_summary": "Decision: MANUAL_REVIEW, Amount: Rs None, Confidence: 1.0",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "MANUAL_REVIEW",
+                "detail": "Fraud score 0.85 exceeded manual review threshold"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    },
+    {
+      "case_id": "TC010",
+      "case_name": "Network Hospital — Discount Applied",
+      "description": "Valid claim at Apollo Hospitals, a network hospital. Network discount must be applied before co-pay.",
+      "expected": {
+        "decision": "APPROVED",
+        "approved_amount": 3240,
+        "notes": "Network discount (20%) applied first on ₹4,500 = ₹3,600. Co-pay (10%) applied on ₹3,600 = ₹360 deducted. Final: ₹3,240.",
+        "system_must": [
+          "Apply network discount before co-pay, not after",
+          "Show the breakdown of discount and co-pay in the decision output"
+        ]
+      },
+      "actual": {
+        "decision": "APPROVED",
+        "pipeline_status": "COMPLETE",
+        "approved_amount": 3240.0,
+        "claimed_amount": 4500.0,
+        "confidence_score": 1.0,
+        "rejection_reasons": [],
+        "partial_items": [],
+        "message": "Claim approved for Rs 3,240.00. Network discount 20% applied (Rs 4,500 -> Rs 3,600.00). Co-pay 10% deducted: Rs 360.00.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'HOSPITAL_BILL'], Required: ['PRESCRIPTION', 'HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for CONSULTATION claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 2 documents",
+            "output_summary": "Extracted data from 2 docs. Diagnoses: ['Acute Bronchitis']. Line items: 2",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "SUCCESS",
+            "input_summary": "Member: EMP010, Category: CONSULTATION, Amount: ₹4500.0",
+            "output_summary": "Rejection reasons: None. Approved: ₹3240.0",
+            "checks": [
+              {
+                "check": "member_validation",
+                "status": "PASSED",
+                "detail": "Member Deepak Shah found, joined 2024-04-01"
+              },
+              {
+                "check": "exclusions",
+                "status": "PASSED",
+                "detail": "No exclusions found"
+              },
+              {
+                "check": "waiting_period",
+                "status": "PASSED",
+                "detail": "No waiting period violations"
+              },
+              {
+                "check": "pre_authorization",
+                "status": "PASSED",
+                "detail": "Pre-authorization not required or already obtained"
+              },
+              {
+                "check": "per_claim_limit",
+                "status": "PASSED",
+                "detail": "Claimed ₹4,500 is within per-claim limit of ₹5,000"
+              },
+              {
+                "check": "network_discount",
+                "status": "APPLIED",
+                "detail": "Network discount 20% applied: ₹4,500 → ₹3,600.00"
+              },
+              {
+                "check": "copay",
+                "status": "APPLIED",
+                "detail": "Co-pay 10% deducted: ₹360.00. Final approved: ₹3,240.00"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "CLEAR",
+            "input_summary": "Checking 0 historical claims, amount ₹4500.0",
+            "output_summary": "Fraud score: 0.00. Signals: None",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "PASSED",
+                "detail": "0 same-day claim(s) found (limit: 2)"
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹4,500 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: [], Fraud score: 0.0",
+            "output_summary": "Decision: APPROVED, Amount: Rs 3240.0, Confidence: 1.0",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "APPROVED",
+                "amount": 3240.0
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    },
+    {
+      "case_id": "TC011",
+      "case_name": "Component Failure — Graceful Degradation",
+      "description": "One component of your system fails mid-processing (simulate with the flag below). The overall pipeline must continue, produce a decision, and make the failure visible in the output with an appropriately reduced confidence score.",
+      "expected": {
+        "decision": "APPROVED",
+        "system_must": [
+          "Not crash or return a 500 error",
+          "Indicate in the output that a component failed and was skipped",
+          "Return a confidence score lower than a normal full-pipeline approval",
+          "Include a note that manual review is recommended due to incomplete processing"
+        ]
+      },
+      "actual": {
+        "decision": "APPROVED",
+        "pipeline_status": "DEGRADED",
+        "approved_amount": 4000.0,
+        "claimed_amount": 4000.0,
+        "confidence_score": 0.65,
+        "rejection_reasons": [],
+        "partial_items": [],
+        "message": "Claim approved for Rs 4,000.00. Note: One or more pipeline components failed during processing. Manual review is recommended.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'HOSPITAL_BILL'], Required: ['PRESCRIPTION', 'HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for ALTERNATIVE_MEDICINE claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 2 documents",
+            "output_summary": "Extracted data from 2 docs. Diagnoses: ['Chronic Joint Pain']. Line items: 2",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "FAILED",
+            "input_summary": null,
+            "output_summary": "Component failed: Simulated component failure for testing. Pipeline continuing in degraded mode.",
+            "checks": [],
+            "error": "Simulated component failure for testing",
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "CLEAR",
+            "input_summary": "Checking 0 historical claims, amount ₹4000.0",
+            "output_summary": "Fraud score: 0.00. Signals: None",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "PASSED",
+                "detail": "0 same-day claim(s) found (limit: 2)"
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹4,000 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: [], Fraud score: 0.0",
+            "output_summary": "Decision: APPROVED, Amount: Rs 4000.0, Confidence: 0.65",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "APPROVED",
+                "amount": 4000.0
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    },
+    {
+      "case_id": "TC012",
+      "case_name": "Excluded Treatment",
+      "description": "Member claims for bariatric consultation and a diet program. Obesity treatment is explicitly excluded under the policy.",
+      "expected": {
+        "decision": "REJECTED",
+        "rejection_reasons": [
+          "EXCLUDED_CONDITION"
+        ],
+        "confidence_score": "above 0.90"
+      },
+      "actual": {
+        "decision": "REJECTED",
+        "pipeline_status": "COMPLETE",
+        "approved_amount": 0.0,
+        "claimed_amount": 8000.0,
+        "confidence_score": 1.0,
+        "rejection_reasons": [
+          "EXCLUDED_CONDITION"
+        ],
+        "partial_items": [
+          {
+            "description": "Bariatric Consultation",
+            "amount": 3000,
+            "status": "EXCLUDED",
+            "reason": "Policy exclusion: obesity and weight loss programs"
+          },
+          {
+            "description": "Personalised Diet and Nutrition Program",
+            "amount": 5000,
+            "status": "EXCLUDED",
+            "reason": "Policy exclusion: obesity and weight loss programs"
+          }
+        ],
+        "message": "Claim rejected. Diagnosis matches excluded condition: obesity and weight loss programs. All line items excluded.",
+        "trace": [
+          {
+            "agent": "DocumentVerificationAgent",
+            "status": "SUCCESS",
+            "input_summary": "Uploaded: ['PRESCRIPTION', 'HOSPITAL_BILL'], Required: ['PRESCRIPTION', 'HOSPITAL_BILL']",
+            "output_summary": "All document checks passed",
+            "checks": [
+              {
+                "check": "all_document_checks",
+                "status": "PASSED",
+                "detail": "All required documents present and valid for CONSULTATION claim"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "ExtractionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Extracting from 2 documents",
+            "output_summary": "Extracted data from 2 docs. Diagnoses: ['Morbid Obesity — BMI 37']. Line items: 2",
+            "checks": [
+              {
+                "check": "extraction",
+                "status": "SUCCESS",
+                "errors": []
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "PolicyCheckAgent",
+            "status": "COMPLETED_WITH_ISSUES",
+            "input_summary": "Member: EMP009, Category: CONSULTATION, Amount: ₹8000.0",
+            "output_summary": "EXCLUDED_CONDITION — diagnosis on exclusion list. Hard stop.",
+            "checks": [
+              {
+                "check": "member_validation",
+                "status": "PASSED",
+                "detail": "Member Anita Desai found, joined 2024-04-01"
+              },
+              {
+                "check": "exclusions",
+                "status": "FAILED",
+                "detail": "Diagnosis matches excluded condition: obesity and weight loss programs. All line items excluded.",
+                "excluded_amount": 8000.0
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "FraudDetectionAgent",
+            "status": "CLEAR",
+            "input_summary": "Checking 0 historical claims, amount ₹8000.0",
+            "output_summary": "Fraud score: 0.00. Signals: None",
+            "checks": [
+              {
+                "check": "same_day_claims",
+                "status": "PASSED",
+                "detail": "0 same-day claim(s) found (limit: 2)"
+              },
+              {
+                "check": "high_value",
+                "status": "PASSED",
+                "detail": "₹8,000 is below high-value threshold of ₹25,000"
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          },
+          {
+            "agent": "DecisionAgent",
+            "status": "SUCCESS",
+            "input_summary": "Policy rejections: ['EXCLUDED_CONDITION'], Fraud score: 0.0",
+            "output_summary": "Decision: REJECTED, Amount: Rs 0, Confidence: 1.0",
+            "checks": [
+              {
+                "check": "final_decision",
+                "status": "REJECTED",
+                "reasons": [
+                  "EXCLUDED_CONDITION"
+                ]
+              }
+            ],
+            "error": null,
+            "timestamp": "2026-04-29T09:52:39.631874"
+          }
+        ]
+      },
+      "passed": true,
+      "verdict": "PASS"
+    }
+  ]
+}
